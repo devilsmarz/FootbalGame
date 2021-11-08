@@ -1,0 +1,211 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace ConsoleApp3
+{
+    delegate void MyDelegate(string message);
+    class Footballer
+    {
+        public string name { get; set; }
+        public int age { get; set; }
+
+        public int level;
+
+        public Footballer(string n, int a)
+        {
+            Random rnd = new Random();
+            name = n;
+            age = a;
+            level = rnd.Next(100);
+        }
+    }
+    class Team
+    {
+        public Coach coach;
+        public string team_name;
+        public List<Footballer> list = new List<Footballer>();
+        public double team_level;
+        public Team(string n)
+        {
+            team_name = n;
+        }
+        public void addplayer(Footballer player)
+        {
+            list.Add(player);
+        }
+        public static int level(List<Footballer> list)
+        {
+            int average = 0;
+            int count = 0;
+            foreach (var item in list)
+            {
+                average = average + item.level;
+                count++;
+            }
+            return average = (average / count);
+        }
+        public static void ListAll(List<Footballer> list)
+        {
+            var querry = from i in list
+                         orderby i.name ascending
+                         select i;
+            Console.WriteLine("Alphabeticallу:");
+            foreach (var item in querry)
+            {
+                Console.WriteLine($"{item.name}, Age:{item.age}, Skill:{item.level}");
+            }
+        }
+        public static void Overthirty(List<Footballer> list)
+        {
+            var querry = from i in list
+                         where i.age > 30
+                         select i;
+            Console.WriteLine("Older than 30:");
+            foreach (var item in querry)
+            {
+                Console.WriteLine($"{item.name}, Age:{item.age}, Skill:{item.level}");
+            }
+        }
+    }
+    class Game
+    {
+        public Referee referee;
+        Team team1;
+        Team team2;
+        public Game(Team a, Team b)
+        {
+            team1 = a;
+            team2 = b;
+
+        }
+        public event MyDelegate foul;
+        public event MyDelegate goal;
+        public void StartGame()
+        {
+            Random rnd = new Random();
+            int a = rnd.Next(100);
+            if (a < 20)
+            {
+                foul?.Invoke("The player made foul");
+            }
+            if (a > 60)
+            {
+                goal?.Invoke("It was goal!!!!!");
+            }
+            Exceptions exc = new Exceptions(a);
+        }
+        public int ResultGame(Team team1, Team team2)
+        {
+            team1.team_level = (int)(Team.level(team1.list) * team1.coach.level);
+            team2.team_level = (int)(Team.level(team2.list) * team2.coach.level);
+            if (referee.preference == 1)
+            {
+                team1.team_level = team1.team_level + 40;
+            }
+            if (referee.preference == 2)
+            {
+                team2.team_level = +40;
+            }
+            Console.WriteLine($"Team level of {team1.team_name} is:{team1.team_level}");
+            Console.WriteLine($"Team level of {team2.team_name} is:{team2.team_level}");
+            try
+            {
+                StartGame();
+                if (team1.team_level + team2.team_level / 10 < team2.team_level)
+                {
+                    Console.WriteLine($"{team2.team_name} won this match");
+                    return 0;
+                }
+                if (team2.team_level + team1.team_level / 10 < team1.team_level)
+                {
+                    Console.WriteLine($"{team1.team_name} won this match");
+                }
+                else { Console.WriteLine("Dead heat"); }
+
+            }
+            catch (Exception exc)
+            {
+                Console.WriteLine($"Suddenly: {exc.Message}. ");
+            }
+            return 0;
+        }
+
+    }
+    class Coach
+    {
+        string name { get; set; }
+        public double level { get; set; }
+        public Coach(string n)
+        {
+            Random rnd = new Random();
+            name = n;
+            level = Convert.ToDouble(rnd.Next(5, 15));
+            level = level / 10;
+            Console.WriteLine($"Level of {name} is:{level}");
+        }
+    }
+    class Referee
+    {
+        public string sirname;
+        public int preference;
+        public Referee(string n)
+        {
+            sirname = n;
+            Random rnd = new Random();
+            preference = rnd.Next(2);
+            Console.WriteLine($"Preference of referee is:{preference}");
+        }
+        public static void DisplayMessage(string message)
+        {
+            Console.WriteLine($"An event happend:{message}");
+        }
+    }
+    class Exceptions
+    {
+        public Exceptions(int a)
+        {
+            if (10 < a && a < 40)
+            {
+                throw new Exception("heavy rain fell.The match will be postponed to the next week");
+            }
+            if (a > 70)
+            {
+                throw new Exception("fans ran out onto the football field.The match is canceled due to the impossibility of holding");
+            }
+        }
+    }
+    class Program
+    {
+
+        static void Main(string[] args)
+        {
+            Team team1 = new Team("Metals");
+            Team team2 = new Team("Raizers");
+            Footballer player1 = new Footballer("Figin", 35);
+            team1.addplayer(player1);
+            Footballer player2 = new Footballer("Bibi", 27);
+            team1.addplayer(player2);
+            Footballer player3 = new Footballer("John", 34);
+            team2.addplayer(player3);
+            Footballer player4 = new Footballer("Fici", 26);
+            team2.addplayer(player4);
+            Coach coach1 = new Coach("Elise");
+            team1.coach = coach1;
+            Coach coach2 = new Coach("Jeam");
+            team2.coach = coach2;
+            Game newgame = new Game(team1, team2);
+            Referee referee = new Referee("Bairo");
+            newgame.referee = referee;
+            newgame.foul += Referee.DisplayMessage;
+            newgame.goal += Referee.DisplayMessage;
+            newgame.ResultGame(team1, team2);
+            Console.WriteLine("===================");
+            Team.ListAll(team1.list);
+            Console.WriteLine("===================");
+            Team.Overthirty(team2.list);
+
+        }
+    }
+}
+
